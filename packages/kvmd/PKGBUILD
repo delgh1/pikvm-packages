@@ -31,6 +31,8 @@ _variants=(
 	v4plus-hdmi:rpi4
 )
 
+# Only generic on aarch64
+[[ $CARCH == "aarch64" ]] && _variants=(v2-hdmiusb:generic)
 
 pkgname=(kvmd)
 for _variant in "${_variants[@]}"; do
@@ -153,6 +155,8 @@ package_kvmd() {
 	install=$pkgname.install
 
 	cd "$srcdir/kvmd-$pkgver"
+	# hack to avoid endless errors about missing serial-number on generic aarch64
+	[[ $CARCH == "aarch64" ]] && sed -i "s/(\(\"serial-number\"\)\(.*\)$/(\"model\"\2 # \1 missing on generic DT\!/g" kvmd/apps/kvmd/info/hw.py
 	pip install --root="$pkgdir" --no-deps .
 
 	install -Dm755 -t "$pkgdir/usr/bin" scripts/kvmd-{bootconfig,gencert,certbot}
@@ -252,5 +256,14 @@ for _variant in "${_variants[@]}"; do
 		echo PIKVM_VIDEO=$_video >> \"\$_device\"
 		echo PIKVM_BOARD=$_board >> \"\$_device\"
 		chmod 444 \"\$_device\"
+
+		# hack to simulate vcgencmd command on generic platform
+		if [[ $_board == generic ]]; then
+			backup=(\"\${backup[@]}\" opt/vc/bin/vcgencmd)
+			mkdir -p \"\$pkgdir/opt/vc/bin\"
+			echo '#!/bin/bash' > \"\$pkgdir/opt/vc/bin/vcgencmd\"
+			echo '[[ \$1 == \"get_throttled\" ]] && echo \"throttled=0x0\"' >> \"\$pkgdir/opt/vc/bin/vcgencmd\"
+			chmod +x \"\$pkgdir/opt/vc/bin/vcgencmd\"
+		fi
 	}"
 done
