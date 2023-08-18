@@ -24,6 +24,7 @@ _variants=(
 	v2-hdmi:rpi4
 
 	v2-hdmiusb:rpi4
+	v2-hdmiusb:generic
 
 	v3-hdmi:rpi4
 
@@ -264,6 +265,8 @@ for _variant in "${_variants[@]}"; do
 			echo '#!/bin/bash' > \"\$pkgdir/opt/vc/bin/vcgencmd\"
 			echo '[[ \$1 == \"get_throttled\" ]] && echo \"throttled=0x0\"' >> \"\$pkgdir/opt/vc/bin/vcgencmd\"
 			chmod +x \"\$pkgdir/opt/vc/bin/vcgencmd\"
+			# hack to remove pikvm kernel depends for generic platform
+			depends=(kvmd=$pkgver-$pkgrel)
 		fi
 	}"
 done
