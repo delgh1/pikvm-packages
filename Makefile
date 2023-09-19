@@ -4,11 +4,11 @@ export PROJECT ?= pikvm-packages
 export BOARD ?= rpi2
 export STAGES ?= __init__ buildenv
 export HOSTNAME = buildenv
-export REPO_URL ?= http://de3.mirror.archlinuxarm.org/
+export REPO_URL ?= http://repo.jing.rocks/archlinuxarm/
 export DOCKER ?= docker
 export DISTCC_HOSTS ?=
 
-DEPLOY_USER ?= root
+DEPLOY_USER ?= nobody
 
 export J ?= $(shell nproc)
 export NC ?=
@@ -48,13 +48,14 @@ all:
 
 
 upload:
-	rsync -rl --progress --delete $(_BASE_REPOS_DIR)/ $(DEPLOY_USER)@files.pikvm.org:/var/www/files.pikvm.org/repos/arch
-	rsync -rl --progress --delete $(_BASE_REPOS_DIR)/ $(DEPLOY_USER)@files.pikvm.org:/var/www/files.pikvm.org/repos/arch-testing
+	true
+#	rsync -rl --progress --delete $(_BASE_REPOS_DIR)/ $(DEPLOY_USER)@files.pikvm.org:/var/www/files.pikvm.org/repos/arch
+#	rsync -rl --progress --delete $(_BASE_REPOS_DIR)/ $(DEPLOY_USER)@files.pikvm.org:/var/www/files.pikvm.org/repos/arch-testing
 
 
 download:
-	rm -rf $(_BASE_REPOS_DIR)
-	rsync -rl --progress $(DEPLOY_USER)@files.pikvm.org:/var/www/files.pikvm.org/repos/arch/ $(_BASE_REPOS_DIR)
+#	rm -rf $(_BASE_REPOS_DIR)
+	rsync -ahSrlH --progress rsync://files.pikvm.org/repos/arch/ $(_BASE_REPOS_DIR)
 
 
 __UPDATABLE := $(addprefix __update__,$(subst /update.mk,,$(subst packages/,,$(wildcard packages/*/update.mk))))
